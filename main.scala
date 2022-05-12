@@ -30,6 +30,11 @@ object Main extends IOApp.Simple:
   val handler: Throwable => IO[Consumer.OnFailure] =
     e => IO.println(e.getMessage).as(Consumer.OnFailure.Nack)
 
+  val pSettings =
+    Producer.Settings[IO, String]()
+      .withShardKey(s => ShardKey.Of(s.hashCode.toString.getBytes(UTF_8)))
+      .withDeduplication(SeqIdMaker.fromEq[String])
+
   val resources =
     for
       pulsar <- Pulsar.make[IO](config.url)
@@ -45,7 +50,7 @@ object Main extends IOApp.Simple:
         Stream(
           c1.autoSubscribe.evalMap(s => IO.println(s"C1: $s")),
           c2.autoSubscribe.evalMap(s => IO.println(s"C2: $s")),
-          Stream.emit("test").covary[IO].metered(1.second).evalMap(p1.send_)
+          Stream.emit("foo").covary[IO].metered(1.second).evalMap(p1.send_)
         ).parJoin(3)
       }
       .interruptAfter(5.seconds)
