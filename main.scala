@@ -5,6 +5,7 @@ import scala.concurrent.duration.*
 import cats.effect.*
 import cats.syntax.all.*
 import dev.profunktor.pulsar.*
+import dev.profunktor.pulsar.Consumer.Message as Msg
 import fs2.Stream
 
 object Main extends IOApp.Simple:
@@ -56,9 +57,9 @@ object Main extends IOApp.Simple:
       .flatMap { (c1, c2, c3, p1) =>
         Stream(
           c3.autoSubscribe.evalMap(s => IO.println(s"C3: $s")),
-          c1.autoSubscribe.evalMap(s => IO.println(s"C1: $s")),
-          c2.autoSubscribe.evalMap(s => IO.println(s"C2: $s")),
-          Stream.emit("foo").covary[IO].metered(1.second).evalMap(p1.send_)
+          c1.subscribe.evalMap{ case Msg(id, _, _, _, s) => IO.println(s"C1: $s") *> c1.ack(id) },
+          c2.subscribe.evalMap{ case Msg(id, _, _, _, s) => IO.println(s"C2: $s") *> c2.ack(id) },
+          Stream.emit("bar").covary[IO].metered(1.second).evalMap(p1.send_)
         ).parJoin(4)
       }
       .interruptAfter(5.seconds)
