@@ -1,6 +1,6 @@
 # pulsar-failover-bug
 
-Reproducible example for https://github.com/apache/pulsar/issues/15189
+Attempt to reproducible https://github.com/apache/pulsar/issues/15189 unsuccessful (good news!).
 
 ### Run
 

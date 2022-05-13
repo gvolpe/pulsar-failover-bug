@@ -45,7 +45,7 @@ object Main extends IOApp.Simple:
 
   val cSettings =
     Consumer.Settings[IO, String]()
-       .withInitialPosition(SubscriptionInitialPosition.Earliest)
+      .withInitialPosition(SubscriptionInitialPosition.Earliest)
 
   val resources =
     for
